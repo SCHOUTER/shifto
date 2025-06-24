@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  role         UserRole   @default(STAFF)
+  passwordHash String
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  availabilities  Availability[]
+  scheduledShifts ScheduledShift[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Restaurant {
+  id   String @id @default(cuid())
+  name String
+
+  // Relations
+  users             User[]
+  roles             Role[]
+  shiftRequirements ShiftRequirement[]
+  scheduledShifts   ScheduledShift[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("restaurants")
+}
+
+model Role {
+  id           String     @id @default(cuid())
+  name         String
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  shiftRequirements ShiftRequirement[]
+  scheduledShifts   ScheduledShift[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, restaurantId])
+  @@map("roles")
+}
+
+model Availability {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek DayOfWeek
+  startTime String // Format: "HH:MM"
+  endTime   String // Format: "HH:MM"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dayOfWeek])
+  @@map("availabilities")
+}
+
+model ShiftRequirement {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  dayOfWeek    DayOfWeek
+  startTime    String // Format: "HH:MM"
+  endTime      String // Format: "HH:MM"
+  needed       Int // Number of people needed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([restaurantId, roleId, dayOfWeek, startTime])
+  @@map("shift_requirements")
+}
+
+model ScheduledShift {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+  startTime String // Format: "HH:MM"
+  endTime   String // Format: "HH:MM"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date, startTime])
+  @@map("scheduled_shifts")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}

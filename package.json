@@ -1,0 +1,25 @@
+{
+  "name": "shifto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "db:generate": "pnpm --filter backend db:generate",
+    "db:push": "pnpm --filter backend db:push",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:studio": "pnpm --filter backend db:studio"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "turbo": "^1.13.4",
+    "typescript": "^5.2.2"
+  },
+  "author": "Niclas Kusenbach",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0"
+}
